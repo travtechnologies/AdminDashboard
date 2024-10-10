@@ -21,15 +21,12 @@ export default function Login({ onLogin }) {
         body: JSON.stringify(loginData),
       });
   
-      // Log the raw response
-      console.log('Response:', response);
+
   
       const text = await response.text(); // Fetch as text first to debug
-      console.log('Response text:', text);
   
       try {
         const result = JSON.parse(text); // Try to parse manually
-        console.log('Result:', result);
   
         if (result.success) {
           onLogin(); // Proceed after successful login

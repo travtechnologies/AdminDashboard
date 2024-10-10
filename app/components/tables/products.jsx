@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import FormComponent from "../forms/prd";
-import ball from "@/api/products/football.png";
 
 const TableComponent = ({ data }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -21,11 +20,45 @@ const TableComponent = ({ data }) => {
     setIsDeleteModalVisible(true);
   };
 
-  const confirmDelete = () => {
-    console.log("Deleted:", itemToDelete);
-    setIsDeleteModalVisible(false);
-    setItemToDelete(null);
-  };
+  const confirmDelete = (e) => {
+    e.preventDefault();
+
+    // Ensure formData contains the correct ID for deletion
+    const requestBody = JSON.stringify({ id: itemToDelete.id });
+
+    console.log("Request Body:", requestBody); // Debug log to check request body
+
+    fetch("http://localhost/admin-dashboard/api/products.php", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    })
+      .then((response) => {
+        if (!response.ok) {
+            throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          alert("Product deleted successfully");
+          // Update your UI here to remove the deleted product from the list
+          // Example: setProducts(prev => prev.filter(item => item.id !== itemToDelete.id));
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+      })
+      .finally(() => {
+        setIsDeleteModalVisible(false); // Close the modal in finally block
+        setItemToDelete(null); // Reset the item to delete in finally block
+      });
+};
 
   const cancelDelete = () => {
     setIsDeleteModalVisible(false);
