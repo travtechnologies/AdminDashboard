@@ -7,15 +7,35 @@ export default function FormComponent({ onClose, onAdd }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+  
+    const formData = {
+      title,        // Use the state variable directly
+      author,       // Use the state variable directly
+      content       // Use the state variable directly
+    };  
 
-    // Simulate adding a new blog entry
-    const newBlog = { Title: title, Author: author, Content: content };
-    console.log('New blog entry:', newBlog);
+    console.log(formData);
 
-    // You can add further logic here to handle the new blog entry (e.g., saving to local storage or a different API)
-    
-    onAdd(); // Call onAdd to refresh the data in the table
-    onClose(); // Close the form after submission
+    // Send form data to PHP script using fetch()
+    fetch('http://localhost/admin-dashboard/api/blogs.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert('Blog added successfully');
+        onClose(); // Close the form if you have a modal or similar
+      } else {
+        alert('Error: ' + data.message);
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
   };
 
   return (
