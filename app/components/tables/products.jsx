@@ -20,13 +20,58 @@ const TableComponent = ({ data }) => {
     setIsDeleteModalVisible(true);
   };
 
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+  
+    const requestBody = JSON.stringify({
+      id: itemToEdit.id,
+      title: editFormData.title,
+      description: editFormData.description,
+      price: editFormData.price,
+      image: editFormData.image,
+    });
+
+    console.log(requestBody);
+  
+    fetch("http://localhost/admin-dashboard/api/products.php", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          alert("Product updated successfully");
+          // Here, update the product list in your state or inform the parent component to update
+          // Example: updateProductList(); // if using a callback function from the parent
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+      })
+      .finally(() => {
+        setIsEditModalVisible(false);
+        setItemToEdit(null);
+      });
+  };
+  
+
   const confirmDelete = (e) => {
     e.preventDefault();
 
     // Ensure formData contains the correct ID for deletion
     const requestBody = JSON.stringify({ id: itemToDelete.id });
 
-    console.log("Request Body:", requestBody); // Debug log to check request body
 
     fetch("http://localhost/admin-dashboard/api/products.php", {
       method: "DELETE",
@@ -44,8 +89,6 @@ const TableComponent = ({ data }) => {
       .then((data) => {
         if (data.success) {
           alert("Product deleted successfully");
-          // Update your UI here to remove the deleted product from the list
-          // Example: setProducts(prev => prev.filter(item => item.id !== itemToDelete.id));
         } else {
           alert("Error: " + data.message);
         }
@@ -89,11 +132,6 @@ const TableComponent = ({ data }) => {
     }));
   };
 
-  const handleEditSubmit = () => {
-    console.log("Updated item:", { ...itemToEdit, ...editFormData });
-    setIsEditModalVisible(false);
-    setItemToEdit(null);
-  };
 
   const handleAddNewProduct = () => {
     setIsFormVisible(true);

@@ -139,9 +139,9 @@ const TableComponent = ({ data, onAdd }) => {
             {data.map((item, index) => (
               <tr key={item.id} className="border-b border-gray-200">
                 <td className="py-3 px-6">{index + 1}</td>
-                <td className="py-3 px-6">{item.title}</td>
-                <td className="py-3 px-6">{item.author}</td>
-                <td className="py-3 px-6">{item.content}</td>
+                <td className="py-3 px-6">{item.blog_title}</td>
+                <td className="py-3 px-6">{item.author_name}</td>
+                <td className="py-3 px-6">{item.blog_content}</td>
                 <td className="py-3 px-6">
                   <Link href={`/blog/${item.id}`}>
                     <button className="rounded-lg bg-green-400 p-2 hover:bg-green-600">

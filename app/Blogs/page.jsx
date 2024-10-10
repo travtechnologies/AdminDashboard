@@ -1,34 +1,44 @@
 "use client";
 import TableComponent from "../components/tables/blogs";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 export default function Blogs() {
-  const [loading, setLoading] = useState(false); // Set loading to false since no data fetch is needed
+  const [data, setData] = useState([]);
 
-  const staticData = [
-    {
-      id: 1,
-      title: "Test Blog",
-      author: "John Doe",
-      content: "This is a test blog.",
-      image: "/test-image.jpg",
-    },
-    {
-      id: 2,
-      title: "Another Test Blog",
-      author: "Jane Doe",
-      content: "This is another test blog.",
-      image: "/another-test-image.jpg",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost/admin-dashboard/api/blogs.php", {
+          method: "GET", // Adjust method as per your API needs
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          const jsonData = await response.json();
+          console.log(jsonData); // Check the response structure here
+          if (jsonData.success) {
+            setData(jsonData.blogs); // Assuming 'products' is the correct key
+          } else {
+            console.error("Error:", jsonData.message);
+          }
+        } else {
+          console.error("Fetch error:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
+  
 
   return (
     <div className="flex flex-wrap justify-center items-center">
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <TableComponent data={staticData} />
-      )}
+      <TableComponent data={data} />
     </div>
   );
 }
