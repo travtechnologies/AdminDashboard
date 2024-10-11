@@ -4,26 +4,21 @@ import Link from "next/link";
 
 const TableComponent = ({ data, onAdd }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isEditFormVisible, setIsEditFormVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [isDeleteFormVisible, setIsDeleteFormVisible] = useState(false);
+  const [isEditFormVisible, setIsEditFormVisible] = useState(false);
+  const [itemToEdit, setItemToEdit] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    author_name: "",
+    content: "",
+  });
 
-  const handleDelete = (item) => {
-    setItemToDelete(item);
-    setShowDeleteConfirm(true);
-  };
+  
+  // Adding a new Blog
 
-  const confirmDelete = () => {
-    console.log("Deleted:", itemToDelete);
-    setShowDeleteConfirm(false);
-    setItemToDelete(null);
-    // Add logic here to remove the item from your data source
-  };
-
-  const handleEdit = (item) => {
-    setSelectedItem(item);
-    setIsEditFormVisible(true);
+  const handleAddNewBlog = () => {
+    setIsFormVisible(true);
   };
 
   const closeForm = () => {
@@ -31,9 +26,125 @@ const TableComponent = ({ data, onAdd }) => {
     setIsEditFormVisible(false);
   };
 
-  const handleAddNewBlog = () => {
-    setIsFormVisible(true);
+  // Deleting the blog
+
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setIsDeleteFormVisible(true);
   };
+
+  const cancelDelete = () => {
+    setIsDeleteFormVisible(false);
+    setItemToDelete(null);
+  };
+
+  const confirmDelete = (e) => {
+    e.preventDefault();
+
+    const requestBody = JSON.stringify({ id: itemToDelete.id });
+
+    // After console logging it's clear that the the id is correct.
+    console.log(requestBody);
+
+    fetch("http://localhost/admin-dashboard/api/blogs.php", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          alert("Blog deleted successfully");
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+      })
+      .finally(() => {
+        setIsDeleteFormVisible(false);
+        setItemToDelete(null);
+      });
+  };
+
+  // Editing the blog
+
+  const handleEdit = (item) => {
+    setItemToEdit(item);
+    setEditFormData({
+      title: item.blog_title,
+      author_name: item.author_name,
+      content: item.blog_title,
+    });
+    setIsEditFormVisible(true);
+  };
+
+
+  const closeEditModal = () => {
+    setIsEditFormVisible(false);
+    setItemToEdit(null);
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+
+    const requestBody = JSON.stringify({
+      id: itemToEdit.id, // Corrected variable name
+      title: editFormData.title,
+      author: editFormData.author_name, // Ensure this matches your state
+      content: editFormData.content,
+    });
+
+
+    fetch("http://localhost/admin-dashboard/api/blogs.php", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          alert("Blog updated successfully");
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+      })
+      .finally(() => {
+        setIsEditFormVisible(false); // Close the modal on success
+        setItemToEdit(null);
+      });
+  };
+
+
+
 
   return (
     <div className="p-6">
@@ -58,7 +169,7 @@ const TableComponent = ({ data, onAdd }) => {
         </div>
       )}
 
-      {isEditFormVisible && selectedItem && (
+      {isEditFormVisible && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="mb-4 text-xl">Edit Blog</h2>
@@ -66,35 +177,36 @@ const TableComponent = ({ data, onAdd }) => {
               <label>Title</label>
               <input
                 type="text"
-                defaultValue={selectedItem.title}
+                name="title"
+                value={editFormData.title}
+                onChange={handleEditFormChange}
                 className="border p-2 w-full mb-4"
               />
               <label>Author</label>
               <input
                 type="text"
-                defaultValue={selectedItem.author}
+                name="author"
+                value={editFormData.author_name}
+                onChange={handleEditFormChange}
                 className="border p-2 w-full mb-4"
               />
               <label>Content</label>
               <textarea
-                defaultValue={selectedItem.content}
+                type="text"
+                name="content"
+                value={editFormData.content}
+                onChange={handleEditFormChange}
                 className="border p-2 w-full mb-4 h-32"
               />
-              <label>Image URL</label>
-              <input
-                type="text"
-                defaultValue={selectedItem.image}
-                className="border p-2 w-full mb-4"
-              />
               <button
-                type="submit"
+                onClick={handleEditSubmit}
                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Save Changes
               </button>
             </form>
             <button
-              onClick={closeForm}
+              onClick={closeEditModal}
               className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
             >
               Close
@@ -103,7 +215,7 @@ const TableComponent = ({ data, onAdd }) => {
         </div>
       )}
 
-      {showDeleteConfirm && (
+      {isDeleteFormVisible && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <p className="mb-4">Are you sure you want to delete this item?</p>
@@ -111,10 +223,10 @@ const TableComponent = ({ data, onAdd }) => {
               onClick={confirmDelete}
               className="bg-red-500 text-white px-4 py-2 rounded mr-2 hover:bg-red-600"
             >
-              Confirm
+              Yes, Delete
             </button>
             <button
-              onClick={() => setShowDeleteConfirm(false)}
+              onClick={cancelDelete}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
               Cancel

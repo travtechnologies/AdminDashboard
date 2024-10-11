@@ -15,63 +15,36 @@ const TableComponent = ({ data }) => {
     image: "",
   });
 
+  // Adding a new product
+
+  const handleAddNewProduct = () => {
+    setIsFormVisible(true);
+  };
+
+  const closeForm = () => {
+    setIsFormVisible(false);
+  };
+
+
+  // Deleting the product
+
   const handleDelete = (item) => {
     setItemToDelete(item);
     setIsDeleteModalVisible(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-  
-    const requestBody = JSON.stringify({
-      id: itemToEdit.id,
-      title: editFormData.title,
-      description: editFormData.description,
-      price: editFormData.price,
-      image: editFormData.image,
-    });
-
-    console.log(requestBody);
-  
-    fetch("http://localhost/admin-dashboard/api/products.php", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: requestBody,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok " + response.statusText);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.success) {
-          alert("Product updated successfully");
-          // Here, update the product list in your state or inform the parent component to update
-          // Example: updateProductList(); // if using a callback function from the parent
-        } else {
-          alert("Error: " + data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("An error occurred: " + error.message);
-      })
-      .finally(() => {
-        setIsEditModalVisible(false);
-        setItemToEdit(null);
-      });
+  const cancelDelete = () => {
+    setIsDeleteModalVisible(false);
+    setItemToDelete(null);
   };
-  
 
   const confirmDelete = (e) => {
     e.preventDefault();
 
-    // Ensure formData contains the correct ID for deletion
     const requestBody = JSON.stringify({ id: itemToDelete.id });
 
+    // After console logging it's clear that the the id is correct.
+    console.log(requestBody);
 
     fetch("http://localhost/admin-dashboard/api/products.php", {
       method: "DELETE",
@@ -103,43 +76,74 @@ const TableComponent = ({ data }) => {
       });
 };
 
-  const cancelDelete = () => {
-    setIsDeleteModalVisible(false);
-    setItemToDelete(null);
-  };
+// Editing the product
 
-  const handleEdit = (item) => {
-    setItemToEdit(item);
-    setEditFormData({
-      title: item.title,
-      description: item.description,
-      price: item.price,
-      image: item.url,
+const handleEdit = (item) => {
+  setItemToEdit(item);
+  setEditFormData({
+    title: item.title,
+    description: item.description,
+    price: item.price,
+    image: item.url,
+  });
+  setIsEditModalVisible(true);
+};
+
+const closeEditModal = () => {
+  setIsEditModalVisible(false);
+  setItemToEdit(null);
+};
+
+const handleEditFormChange = (e) => {
+  const { name, value } = e.target;
+  setEditFormData((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+  
+    const requestBody = JSON.stringify({
+      id: itemToEdit.id,
+      title: editFormData.title,
+      description: editFormData.description,
+      price: editFormData.price,
+      image: editFormData.image,
     });
-    setIsEditModalVisible(true);
+  
+    fetch("http://localhost/admin-dashboard/api/products.php", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          alert("Product updated successfully");
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+      })
+      .finally(() => {
+        setIsEditModalVisible(false);
+        setItemToEdit(null);
+      });
   };
+  
 
-  const closeEditModal = () => {
-    setIsEditModalVisible(false);
-    setItemToEdit(null);
-  };
-
-  const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-
-  const handleAddNewProduct = () => {
-    setIsFormVisible(true);
-  };
-
-  const closeForm = () => {
-    setIsFormVisible(false);
-  };
 
   return (
     <div className="p-6">
