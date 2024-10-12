@@ -43,9 +43,6 @@ const TableComponent = ({ data, onAdd }) => {
 
     const requestBody = JSON.stringify({ id: itemToDelete.id });
 
-    // After console logging it's clear that the the id is correct.
-    console.log(requestBody);
-
     fetch("http://localhost/admin-dashboard/api/blogs.php", {
       method: "DELETE",
       headers: {
@@ -112,6 +109,8 @@ const TableComponent = ({ data, onAdd }) => {
       content: editFormData.content,
     });
 
+    console.log(requestBody);
+
 
     fetch("http://localhost/admin-dashboard/api/blogs.php", {
       method: "PUT",
@@ -134,7 +133,7 @@ const TableComponent = ({ data, onAdd }) => {
         }
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error:",error);
         alert("An error occurred: " + error.message);
       })
       .finally(() => {

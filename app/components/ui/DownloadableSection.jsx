@@ -5,7 +5,8 @@ import { FaFileDownload, FaQuestionCircle, FaChevronDown, FaChevronUp, FaTrash, 
 const DownloadSection = () => {
   const [sections, setSections] = useState([]);
   const [newSectionName, setNewSectionName] = useState('');
-  const [formData, setFormData] = useState({ sectionIndex: null, name: '', file: null });
+  const [formData, setFormData] = useState(
+    { sectionIndex: null, name: '', path: '' });
   const [isFormPopupOpen, setFormPopupOpen] = useState(false);
   const [isDeletePopupOpen, setDeletePopupOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState({ type: '', index: null, linkIndex: null });
@@ -18,12 +19,35 @@ const DownloadSection = () => {
     );
   };
 
-  const addNewSection = () => {
+  const addNewSection = async () => {
     if (newSectionName.trim() === '') return;
-    const newSection = { title: newSectionName, isOpen: false, links: [] };
-    setSections((prevSections) => [...prevSections, newSection]);
-    setNewSectionName('');
-  };
+
+    console.log(newSectionName); // Check if the newSectionName is being logged
+
+    try {
+        const response = await fetch('http://localhost/admin-dashboard/api/sections.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sectionName: newSectionName }), // Sending sectionName in JSON format
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            const newSection = { title: newSectionName, isOpen: false, links: [] };
+            setSections((prevSections) => [...prevSections, newSection]);
+            setNewSectionName(''); // Clear the input field
+        } else {
+            console.error('Error saving section:', data.message); // Log the error message
+        }
+    } catch (error) {
+        console.error('Error:', error.message); // Handle network errors
+    }
+};
+
+  
 
   const deleteSection = (index) => {
     setDeleteTarget({ type: 'section', index });
@@ -59,19 +83,40 @@ const DownloadSection = () => {
     }));
   };
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
     const { sectionIndex, name, file } = formData;
+  
     if (name && file) {
-      const newLink = { text: name, file: URL.createObjectURL(file) };
-      setSections((prevSections) =>
-        prevSections.map((section, i) =>
-          i === sectionIndex ? { ...section, links: [...section.links, newLink] } : section
-        )
-      );
-      setFormPopupOpen(false);
+      const formDataToSend = new FormData();
+      formDataToSend.append('section_id', sectionIndex); // Assuming you're passing the section ID.
+      formDataToSend.append('name', name);
+      formDataToSend.append('file', file);
+  
+      try {
+        const response = await fetch('http://localhost/admin-dashboard/api/forms.php', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+  
+        const data = await response.json();
+        if (data.success) {
+          const newLink = { text: name, file: URL.createObjectURL(file) };
+          setSections((prevSections) =>
+            prevSections.map((section, i) =>
+              i === sectionIndex ? { ...section, links: [...section.links, newLink] } : section
+            )
+          );
+          setFormPopupOpen(false);
+        } else {
+          console.error('Error saving form:', data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
   };
+  
 
   const deleteForm = (sectionIndex, linkIndex) => {
     setDeleteTarget({ type: 'form', index: sectionIndex, linkIndex });
@@ -143,8 +188,10 @@ const DownloadSection = () => {
               required
             />
             <input
-              type="file"
-              name="file"
+              type="text"
+              name="name"
+              placeholder="Form Path"
+              value={formData.path}
               onChange={handleFormChange}
               className="border border-gray-300 rounded p-2 mb-4 w-full"
               required
