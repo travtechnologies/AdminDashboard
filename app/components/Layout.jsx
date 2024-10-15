@@ -8,13 +8,13 @@ const Layout = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(null); // Start as null to avoid mismatch
 
   useEffect(() => {
-    // Replace with your actual logic to check login status
-    const isUserLoggedIn = false/* your login check logic, e.g., from localStorage */;
+    const isUserLoggedIn = localStorage.getItem("isLoggedIn") === "true"; // Check localStorage for login state
     setIsLoggedIn(isUserLoggedIn);
   }, []);
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
+    localStorage.setItem("isLoggedIn", "true"); // Set login state in localStorage
+    setIsLoggedIn(true); // Update state
   };
 
   // Handle loading state while determining login status
