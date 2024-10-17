@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import FormComponent from "../forms/prd";
 
-const TableComponent = ({ data }) => {
+const TableComponent = ({ data, userRole }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -24,7 +24,6 @@ const TableComponent = ({ data }) => {
   const closeForm = () => {
     setIsFormVisible(false);
   };
-
 
   // Deleting the product
 
@@ -55,7 +54,7 @@ const TableComponent = ({ data }) => {
     })
       .then((response) => {
         if (!response.ok) {
-            throw new Error("Network response was not ok " + response.statusText);
+          throw new Error("Network response was not ok " + response.statusText);
         }
         return response.json();
       })
@@ -74,37 +73,37 @@ const TableComponent = ({ data }) => {
         setIsDeleteModalVisible(false); // Close the modal in finally block
         setItemToDelete(null); // Reset the item to delete in finally block
       });
-};
+  };
 
-// Editing the product
+  // Editing the product
 
-const handleEdit = (item) => {
-  setItemToEdit(item);
-  setEditFormData({
-    title: item.title,
-    description: item.description,
-    price: item.price,
-    image: item.url,
-  });
-  setIsEditModalVisible(true);
-};
+  const handleEdit = (item) => {
+    setItemToEdit(item);
+    setEditFormData({
+      title: item.title,
+      description: item.description,
+      price: item.price,
+      image: item.url,
+    });
+    setIsEditModalVisible(true);
+  };
 
-const closeEditModal = () => {
-  setIsEditModalVisible(false);
-  setItemToEdit(null);
-};
+  const closeEditModal = () => {
+    setIsEditModalVisible(false);
+    setItemToEdit(null);
+  };
 
-const handleEditFormChange = (e) => {
-  const { name, value } = e.target;
-  setEditFormData((prevData) => ({
-    ...prevData,
-    [name]: value,
-  }));
-};
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-  
+
     const requestBody = JSON.stringify({
       id: itemToEdit.id,
       title: editFormData.title,
@@ -112,7 +111,7 @@ const handleEditFormChange = (e) => {
       price: editFormData.price,
       image: editFormData.image,
     });
-  
+
     fetch("http://localhost/admin-dashboard/api/products.php", {
       method: "PATCH",
       headers: {
@@ -142,8 +141,6 @@ const handleEditFormChange = (e) => {
         setItemToEdit(null);
       });
   };
-  
-
 
   return (
     <div className="p-6">
@@ -304,18 +301,22 @@ const handleEditFormChange = (e) => {
 
                   <td className="py-3 px-6">
                     <div className="flex">
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className="bg-red-500 text-white px-4 py-2 rounded mr-2 hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                      >
-                        Edit
-                      </button>
+                      {(userRole !== "admin" || userRole !== "viewer") && (
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="bg-red-500 text-white px-4 py-2 rounded mr-2 hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
+                      {(userRole !== "admin" || userRole !== "viewer") && (
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                        >
+                          Edit
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

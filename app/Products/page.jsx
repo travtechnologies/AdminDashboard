@@ -4,6 +4,7 @@ import TableComponent from "../components/tables/products";
 
 export default function Products() {
   const [data, setData] = useState([]);
+  const [role,setRole] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,15 +31,51 @@ export default function Products() {
         console.error("Error fetching data:", error);
       }
     };
+
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost/admin-dashboard/api/login.php",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: 'include',
+          }
+        );
+    
+        const text = await response.text(); // Fetch as text first to debug
+    
+        console.log("Response Text:", text); // Log the raw response text for debugging
+    
+        try {
+          const result = JSON.parse(text); // Try to parse manually
+          console.log("Parsed Result:", result);
+    
+          if (result.success) {
+            setRole(result.userRole);
+          } else {
+            console.log("Error:", result.message);
+          }
+        } catch (jsonError) {
+          console.error("Failed to parse JSON:", jsonError);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      }
+    };
+    
   
     fetchData();
+    fetchUserRole();
   }, []);
   
   
 
   return (
     <div className="flex flex-wrap justify-center items-center gap-5">
-      <TableComponent data={data} />
+      <TableComponent data={data} userRole={role} />
     </div>
   );
 }
