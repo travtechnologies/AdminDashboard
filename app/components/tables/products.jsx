@@ -144,12 +144,14 @@ const TableComponent = ({ data, userRole }) => {
 
   return (
     <div className="p-6">
-      <button
-        onClick={handleAddNewProduct}
-        className="mb-4 bg-blue-500 text-white px-4 py-2 rounded ml-auto hover:bg-blue-600"
-      >
-        Add New Product
-      </button>
+      {(userRole !== "admin" || userRole !== "viewer") && (
+        <button
+          onClick={handleAddNewProduct}
+          className="mb-4 bg-blue-500 text-white px-4 py-2 rounded ml-auto hover:bg-blue-600"
+        >
+          Add New Product
+        </button>
+      )}
 
       {/* Add Form Modal */}
       {isFormVisible && (
